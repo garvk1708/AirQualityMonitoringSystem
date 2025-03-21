@@ -1,10 +1,11 @@
 # Air Quality Monitoring Dashboard
 
-This Streamlit application provides a real-time monitoring dashboard for air quality sensors connected to an ESP8266 microcontroller. The application fetches data from the ESP8266 device, visualizes current and historical readings, and provides interpretations and predictions for the environmental conditions.
+This Streamlit application provides a real-time monitoring dashboard for air quality sensors connected to an ESP8266 microcontroller. The application fetches data through a Python adapter that communicates with the ESP8266 device, visualizes current and historical readings, and provides interpretations and predictions for the environmental conditions.
 
 ## Features
 
 - Real-time monitoring of temperature, humidity, and air quality
+- Data fetching through a Python adapter between ESP8266 and the dashboard
 - Historical data visualization with interactive charts
 - Automatic data refresh at configurable intervals
 - Basic prediction of future sensor values using linear regression
