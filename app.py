@@ -13,6 +13,11 @@ st.set_page_config(
     layout="wide",
 )
 
+# Health check endpoint
+if st.query_params.get("healthz"):
+    st.write("ok")
+    st.stop()
+
 # ESP8266 IP address - can be changed in the sidebar
 ESP_IP = "http://192.168.137.91/data"
 
