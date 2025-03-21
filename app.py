@@ -3,6 +3,7 @@ import pandas as pd
 import numpy as np
 import requests
 import time
+import random
 from datetime import datetime, timedelta
 import air_quality_utils as aq_utils
 
@@ -31,6 +32,14 @@ if 'connection_error' not in st.session_state:
     st.session_state.connection_error = False
 if 'error_message' not in st.session_state:
     st.session_state.error_message = ""
+if 'demo_mode' not in st.session_state:
+    st.session_state.demo_mode = False
+if 'base_temp' not in st.session_state:
+    st.session_state.base_temp = 24.5
+if 'base_humidity' not in st.session_state:
+    st.session_state.base_humidity = 48.0
+if 'base_air_quality' not in st.session_state:
+    st.session_state.base_air_quality = 150
 
 # Application title
 st.title("Air Quality Monitoring Dashboard")
@@ -45,6 +54,11 @@ with st.sidebar:
         value=ESP_IP.replace("http://", "").replace("/data", "")
     )
     ESP_IP = f"http://{esp_ip_input}/data"
+    
+    st.write("---")
+    
+    # Demo mode toggle
+    st.session_state.demo_mode = st.checkbox("Demo Mode (Generate Sample Data)", value=True)
     
     st.write("---")
     
@@ -83,17 +97,49 @@ with st.sidebar:
     if st.button("Refresh Data Now"):
         st.session_state.last_update = datetime.now() - timedelta(minutes=10)
 
-# Function to fetch data from ESP8266
+# Function to generate simulated data
+def generate_sample_data():
+    # Generate slightly varying data around base values
+    # This simulates real sensor readings with some natural variation
+    temp_variation = random.uniform(-0.5, 0.5)
+    humidity_variation = random.uniform(-2.0, 2.0)
+    air_quality_variation = random.uniform(-10, 10)
+    
+    # Update base values with some drift to simulate changing conditions
+    st.session_state.base_temp += random.uniform(-0.1, 0.1)
+    st.session_state.base_humidity += random.uniform(-0.2, 0.2)
+    st.session_state.base_air_quality += random.uniform(-5, 5)
+    
+    # Keep values in realistic ranges
+    st.session_state.base_temp = max(18, min(30, st.session_state.base_temp))
+    st.session_state.base_humidity = max(30, min(70, st.session_state.base_humidity))
+    st.session_state.base_air_quality = max(50, min(500, st.session_state.base_air_quality))
+    
+    # Return simulated data
+    return {
+        "temperature": st.session_state.base_temp + temp_variation,
+        "humidity": st.session_state.base_humidity + humidity_variation,
+        "airQuality": int(st.session_state.base_air_quality + air_quality_variation)
+    }
+
+# Function to fetch data from ESP8266 or generate sample data
 def fetch_data():
-    try:
-        response = requests.get(ESP_IP, timeout=5)
-        data = response.json()
+    if st.session_state.demo_mode:
+        # Generate sample data in demo mode
+        sample_data = generate_sample_data()
         st.session_state.connection_error = False
-        return data
-    except Exception as e:
-        st.session_state.connection_error = True
-        st.session_state.error_message = f"Error fetching data: {e}"
-        return None
+        return sample_data
+    else:
+        # Try to fetch real data from ESP8266
+        try:
+            response = requests.get(ESP_IP, timeout=5)
+            data = response.json()
+            st.session_state.connection_error = False
+            return data
+        except Exception as e:
+            st.session_state.connection_error = True
+            st.session_state.error_message = f"Error fetching data: {e}"
+            return None
 
 # Main dashboard layout
 col1, col2, col3 = st.columns(3)
