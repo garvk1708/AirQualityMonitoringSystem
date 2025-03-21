@@ -14,7 +14,7 @@ st.set_page_config(
 )
 
 # Health check endpoint
-if st.query_params.get("healthz"):
+if st.experimental_get_query_params().get("healthz"):
     st.write("ok")
     st.stop()
 
