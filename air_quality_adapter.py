@@ -27,7 +27,12 @@ def fetch_data_from_esp():
         data = response.json()
         return data, None
     except Exception as e:
-        return None, f"Error fetching data from ESP8266: {e}"
+        # Return an empty data structure instead of None to avoid "not subscriptable" errors
+        return {
+            "temperature": 0,
+            "humidity": 0,
+            "airQuality": 0
+        }, f"Error fetching data from ESP8266: {e}"
 
 def generate_sample_data():
     """Generate simulated data for demo mode"""
@@ -69,8 +74,8 @@ def get_sensor_data(use_demo_mode=False, esp_ip=None):
         error = None
     else:
         data, error = fetch_data_from_esp()
-        if error:
-            return None, error
+        # We'll still use the data even if there's an error because fetch_data_from_esp now returns 
+        # a valid data structure with zeros instead of None
     
     # Store data in history
     current_time = datetime.now().strftime("%H:%M:%S")
@@ -86,7 +91,7 @@ def get_sensor_data(use_demo_mode=False, esp_ip=None):
         humidities.pop(0)
         air_qualities.pop(0)
     
-    return data, None
+    return data, error
 
 def get_historical_data():
     """Get historical data for plotting"""
