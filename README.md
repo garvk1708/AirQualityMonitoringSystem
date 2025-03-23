@@ -36,7 +36,7 @@ This Streamlit application provides a real-time monitoring dashboard for air qua
    streamlit run app.py
    ```
 
-4. The dashboard should open in your web browser automatically. If not, navigate to the URL shown in the terminal (typically http://localhost:5000).
+4. The dashboard should open in your web browser automatically. If not, navigate to the URL shown in the terminal (typically http://localhost:8051).
 
 ## Configuration
 
