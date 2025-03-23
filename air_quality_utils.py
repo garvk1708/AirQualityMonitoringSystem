@@ -2,6 +2,7 @@ import pandas as pd
 import numpy as np
 from datetime import datetime, timedelta
 from sklearn.linear_model import LinearRegression
+from sklearn.preprocessing import PolynomialFeatures
 
 # Temperature interpretation
 def interpret_temperature(temp):
@@ -42,23 +43,28 @@ def interpret_air_quality(air_quality):
     else:
         return "🟣 Hazardous", "Health alert: everyone may experience more serious health effects. Improve ventilation urgently."
 
-# Generate predictions based on historical data
-def generate_predictions(df, predict_points=5):
+# Generate predictions based on historical data using polynomial regression
+def generate_predictions(df, predict_points=5, degree=2):
     # Convert to numerical indices for prediction
     X = np.array(range(len(df))).reshape(-1, 1)
     
+    # Create polynomial features
+    poly = PolynomialFeatures(degree=degree)
+    X_poly = poly.fit_transform(X)
+    
     # Create models for each metric
-    temp_model = LinearRegression().fit(X, df["Temperature (°C)"])
-    humidity_model = LinearRegression().fit(X, df["Humidity (%)"])
-    air_quality_model = LinearRegression().fit(X, df["Air Quality (PPM)"])
+    temp_model = LinearRegression().fit(X_poly, df["Temperature (°C)"])
+    humidity_model = LinearRegression().fit(X_poly, df["Humidity (%)"])
+    air_quality_model = LinearRegression().fit(X_poly, df["Air Quality (PPM)"])
     
     # Generate future indices
     future_indices = np.array(range(len(df), len(df) + predict_points)).reshape(-1, 1)
+    future_indices_poly = poly.transform(future_indices)
     
     # Predict future values
-    future_temp = temp_model.predict(future_indices)
-    future_humidity = humidity_model.predict(future_indices)
-    future_air_quality = air_quality_model.predict(future_indices)
+    future_temp = temp_model.predict(future_indices_poly)
+    future_humidity = humidity_model.predict(future_indices_poly)
+    future_air_quality = air_quality_model.predict(future_indices_poly)
     
     # Create prediction timestamps (continuing from last timestamp)
     last_time = datetime.strptime(df["Time"].iloc[-1], "%H:%M:%S")

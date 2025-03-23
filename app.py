@@ -14,12 +14,12 @@ st.set_page_config(
 )
 
 # Health check endpoint
-if st.experimental_get_query_params().get("healthz"):
+if st.query_params.get("healthz"):
     st.write("ok")
     st.stop()
 
 # ESP8266 IP address - can be changed in the sidebar
-ESP_IP = "http://192.168.137.91/data"
+ESP_IP = "http://192.168.137.59/data"
 
 # Initialize session state variables to store historical data
 if 'last_update' not in st.session_state:
@@ -171,6 +171,19 @@ if len(timestamps) > 0:
         air_quality_status, air_quality_message = aq_utils.interpret_air_quality(current_aq)
         st.info(f"Status: {air_quality_status}")
 
+    # Air Quality Interpretation
+    st.subheader("Air Quality Analysis")
+    st.write(air_quality_message)
+    
+    # Overall Assessment
+    st.subheader("Overall Environmental Assessment")
+    overall_message = aq_utils.get_overall_assessment(
+        temperatures[-1],
+        humidities[-1],
+        air_qualities[-1]
+    )
+    st.write(overall_message)
+
     # Create a DataFrame for historical data
     df = pd.DataFrame({
         "Time": timestamps,
@@ -226,19 +239,6 @@ if len(timestamps) > 0:
         st.subheader("Historical Data")
         st.line_chart(df.set_index("Time")[["Temperature (°C)", "Humidity (%)", "Air Quality (PPM)"]])
         st.info("Collecting more data for predictions...")
-
-    # Air Quality Interpretation
-    st.subheader("Air Quality Analysis")
-    st.write(air_quality_message)
-    
-    # Overall Assessment
-    st.subheader("Overall Environmental Assessment")
-    overall_message = aq_utils.get_overall_assessment(
-        temperatures[-1],
-        humidities[-1],
-        air_qualities[-1]
-    )
-    st.write(overall_message)
 
     # Raw data in expandable section
     with st.expander("View Raw Data"):
